@@ -15,6 +15,7 @@ namespace Calculator2._0
     public partial class Form1 : Form
     {
         String path = Environment.CurrentDirectory + "/" + "Memory.txt";
+        String lastValue = Environment.CurrentDirectory + "/" + "lastValue.txt";
         Double result = 0.0;
         String operatorUsed = "";
 
@@ -23,10 +24,17 @@ namespace Calculator2._0
             InitializeComponent();
         }
 
+        //numbers and decimal
         private void Input_Click(object sender, EventArgs e)
         {
             Button input = (Button)sender;
-
+            if(txtDisplay.Text == "**Cannot Divide by Zero**") { txtDisplay.Clear(); }
+            // if the = operator is already used clear text and display
+            if (txtDisplay.Text.Contains("="))
+            {
+                txtDisplay.Clear();
+                txtInput.Clear();
+            }
             if(txtInput.Text == "0" && input.Text != ".")
             {
                 txtInput.Clear();
@@ -57,7 +65,7 @@ namespace Calculator2._0
         {
             txtInput.Text = "0";
         }
-
+        // numbers, decimal, and operator entered via number pad/ number keys
         private void KeysPressed(object sender, KeyPressEventArgs e)
         {
             switch (e.KeyChar.ToString())
@@ -206,7 +214,7 @@ namespace Calculator2._0
         {
             if (File.Exists(path))
             {
-                File.Delete(path);
+                using (FileStream fs = File.Create(path)) { };
             }
         }
 
@@ -219,6 +227,44 @@ namespace Calculator2._0
                     string text = sr.ReadToEnd();
                     txtInput.Text = text;
                     sr.Close();
+                }
+            }
+        }
+
+        // loads last value in txtinput
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            if (File.Exists(lastValue))
+            {
+                using (StreamReader sr = new StreamReader(lastValue))
+                {
+                    string text = sr.ReadToEnd();
+                    txtInput.Text = text;
+                    sr.Close();
+                }
+            }
+        }
+
+        // stores lastValue on closing
+        private void OnClose(object sender, FormClosingEventArgs e)
+        {
+            if (!File.Exists(lastValue))
+            {
+                using (FileStream fs = File.Create(lastValue))
+                {
+                    using (StreamWriter sw = new StreamWriter(lastValue))
+                    {
+                        sw.WriteLine(txtInput.Text);
+                        sw.Close();
+                    }
+                }
+            }
+            else
+            {
+                using (StreamWriter sw = new StreamWriter(lastValue))
+                {
+                    sw.WriteLine(txtInput.Text);
+                    sw.Close();
                 }
             }
         }
